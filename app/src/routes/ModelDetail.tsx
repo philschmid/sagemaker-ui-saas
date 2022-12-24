@@ -21,22 +21,22 @@ import { Container, Header, SpaceBetween } from '@cloudscape-design/components'
 import Markdown from 'markdown-to-jsx'
 
 import React from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 /**
  * Component to render the home "/" route.
  */
 const ModelDetail: React.FC = () => {
+  const navigate = useNavigate()
   let { user, repo } = useParams()
   const modelId = repo ? `${user}/${repo}` : user
   //   params: { personId },
   // } = props.match
-  const { setAppLayoutProps, onNavigate } = useContext(AppLayoutContext)
+  const { setAppLayoutProps } = useContext(AppLayoutContext)
   const { isError, isSuccess, isLoading, data, error } = useQuery(['model', modelId], getModelDetail, {
     staleTime: 3000,
   })
-
-  console.log(data?.metrics)
+  const gridLayout = data?.metrics.length > 0 ? [{ colspan: 8 }, { colspan: 4 }] : [{ colspan: 12 }]
 
   useEffect(() => {
     setAppLayoutProps({
@@ -45,7 +45,12 @@ const ModelDetail: React.FC = () => {
           variant="h1"
           actions={
             <SpaceBetween direction="horizontal" size="xs">
-              <Button variant="primary" href={`/endpoints/new?modelId=${modelId}&task=${data?.pipeline_tag}`}>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  navigate(`/endpoints/new?modelId=${modelId}&task=${data?.pipeline_tag}`)
+                }}
+              >
                 Launch Endpoint
               </Button>
               <Button href={`https://huggingface.co/${modelId}`} target="_blank">
@@ -59,13 +64,9 @@ const ModelDetail: React.FC = () => {
         </Header>
       ),
     })
-  }, [])
+  }, [data])
 
   if (isLoading) return <div>Loading...</div>
-
-  console.log(data)
-
-  const gridLayout = data?.metrics.length > 0 ? [{ colspan: 8 }, { colspan: 4 }] : [{ colspan: 12 }]
 
   return (
     <>
@@ -103,7 +104,7 @@ const ModelDetail: React.FC = () => {
                   <Box variant="h4">dataset: {dataset.name}</Box>
                   <div>
                     {metrics.map(({ name, value }) => (
-                      <div>
+                      <div key={name}>
                         {name}: <strong>{value}</strong>{' '}
                       </div>
                     ))}

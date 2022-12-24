@@ -1,4 +1,3 @@
-import './App.css'
 import React from 'react'
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom'
 
@@ -28,6 +27,34 @@ const NAVIGATION_ITEMS: SideNavigationProps.Item[] = [
   { text: 'Overview', type: 'link', href: '/' },
   { text: 'Hugging Face Models', type: 'link', href: '/models' },
   { text: 'Create Endpoint', type: 'link', href: '/endpoints/new' },
+  { type: 'divider' },
+  {
+    type: 'section',
+    text: 'Inference',
+    items: [
+      {
+        type: 'link',
+        text: 'Endpoints',
+        href: '/endpoints',
+      },
+    ],
+  },
+  {
+    type: 'section',
+    text: 'Training',
+    items: [
+      {
+        type: 'link',
+        text: 'Launch Notebook',
+        href: '/notebooks',
+      },
+      {
+        type: 'link',
+        text: 'Launch Training',
+        href: '/training',
+      },
+    ],
+  },
 ]
 
 /**
@@ -76,6 +103,8 @@ const App: React.FC = () => {
       e.preventDefault()
       setAppLayoutProps({})
       setActiveHref(e.detail.href)
+
+      console.log('called')
 
       const segments = setActiveBreadcrumbs(createBreadcrumbItems(e.detail.href))
       navigate(e.detail.href)

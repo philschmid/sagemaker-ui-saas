@@ -14,6 +14,7 @@ import {
   Link,
 } from '@cloudscape-design/components'
 import React from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 type model = {
   id: string
@@ -25,20 +26,12 @@ type model = {
  * Component to render the home "/" route.
  */
 const Models: React.FC = () => {
-  const { setAppLayoutProps } = useContext(AppLayoutContext)
+  const navigate = useNavigate()
   const { isError, isSuccess, isLoading, data, error } = useQuery(['products'], fetchModels, { staleTime: 3000 })
-  console.log('models: ', data)
   const [filteringText, setFilteringText] = React.useState('')
-  // const TotalNumberOfProducts = models?.length
   const filteredModels = data?.filter((p) => p.id.includes(filteringText))
 
   if (isLoading) return <div>Loading...</div>
-
-  // useEffect(() => {
-  //   setAppLayoutProps({
-  //     contentHeader: <Header>Models</Header>,
-  //   })
-  // }, [setAppLayoutProps])
 
   return (
     <Table
@@ -47,9 +40,14 @@ const Models: React.FC = () => {
           id: 'model',
           header: 'Model Id',
           cell: (e: model) => (
-            <Link key={e.id} href={`/models/${e.id}`}>
+            <Link
+              onFollow={() => {
+                navigate(e.id)
+              }}
+            >
               {e.id}
             </Link>
+            // <Navigate to={`/models/${e.id}`} replace={true} />
           ),
           sortingField: 'model',
         },
