@@ -45,7 +45,9 @@ const ModelDetail: React.FC = () => {
           variant="h1"
           actions={
             <SpaceBetween direction="horizontal" size="xs">
-              <Button variant="primary">Launch Endpoint</Button>
+              <Button variant="primary" href={`/endpoints/new?modelId=${modelId}&task=${data?.pipeline_tag}`}>
+                Launch Endpoint
+              </Button>
               <Button href={`https://huggingface.co/${modelId}`} target="_blank">
                 View on HuggingFace <Icon name="external" variant="link" />
               </Button>
