@@ -1,14 +1,8 @@
-import { Amplify } from 'aws-amplify'
 import './App.css'
 import React from 'react'
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom'
-import Home from './routes/Overview'
-import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react'
-import { formFields, services } from './auth/AmplifyFlow'
 
 import '@cloudscape-design/global-styles/index.css'
-import SignUp from './auth/SignUp'
-import { Container } from '@cloudscape-design/components'
 import {
   BreadcrumbGroup,
   BreadcrumbGroupProps,
@@ -23,14 +17,15 @@ import Config from './config.json'
 import NavHeader from './components/NavHeader'
 // import CreateEndpoint from './pages/CreateEndpoint';
 import Overview from './routes/Overview'
-
-
+import Models from './routes/Models'
+import ModelDetail from './routes/ModelDetail'
 
 /**
  * Define your nav items here.
  */
 const NAVIGATION_ITEMS: SideNavigationProps.Item[] = [
   { text: 'Overview', type: 'link', href: '/' },
+  { text: 'Hugging Face Models', type: 'link', href: '/models' },
   { text: 'Create Endpoint', type: 'link', href: '/new' },
 ]
 
@@ -40,15 +35,32 @@ const NAVIGATION_ITEMS: SideNavigationProps.Item[] = [
 export const AppLayoutContext = createContext({
   appLayoutProps: {},
   setAppLayoutProps: (_: AppLayoutProps) => {},
+  onNavigate: {},
 })
 
+const createBreadcrumbItems = (path: string): BreadcrumbGroupProps.Item[] => {
+  const segments = ['/', ...path.split('/').filter((segment) => segment !== '')]
+  const breadcrumb = segments.map((segment, i) => {
+    const href = segments
+      .slice(0, i + 1)
+      .join('/')
+      .replace('//', '/')
+    return {
+      href,
+      text: segment,
+    }
+  })
+  return breadcrumb
+}
 /**
  * Defines the App layout and contains logic for routing.
  */
 const App: React.FC = () => {
   const navigate = useNavigate()
-  const [activeHref, setActiveHref] = useState('/')
-  const [activeBreadcrumbs, setActiveBreadcrumbs] = useState<BreadcrumbGroupProps.Item[]>([{ text: '/', href: '/' }])
+  const [activeHref, setActiveHref] = useState(window.location.pathname)
+  const [activeBreadcrumbs, setActiveBreadcrumbs] = useState<BreadcrumbGroupProps.Item[]>(
+    createBreadcrumbItems(window.location.pathname)
+  )
   const [appLayoutProps, setAppLayoutProps] = useState<AppLayoutProps>({})
 
   const setAppLayoutPropsSafe = useCallback(
@@ -64,26 +76,14 @@ const App: React.FC = () => {
       setAppLayoutProps({})
       setActiveHref(e.detail.href)
 
-      const segments = ['/', ...e.detail.href.split('/').filter((segment) => segment !== '')]
-      setActiveBreadcrumbs(
-        segments.map((segment, i) => {
-          const href = segments
-            .slice(0, i + 1)
-            .join('/')
-            .replace('//', '/')
-          return {
-            href,
-            text: segment,
-          }
-        })
-      )
+      const segments = setActiveBreadcrumbs(createBreadcrumbItems(e.detail.href))
       navigate(e.detail.href)
     },
     [navigate, setAppLayoutProps, setActiveBreadcrumbs]
   )
   return (
     <Auth>
-       <NavHeader />
+      <NavHeader />
       <AppLayout
         breadcrumbs={<BreadcrumbGroup onFollow={onNavigate} items={activeBreadcrumbs} />}
         // toolsHide
@@ -96,16 +96,18 @@ const App: React.FC = () => {
           />
         }
         content={
-          <AppLayoutContext.Provider value={{ appLayoutProps, setAppLayoutProps: setAppLayoutPropsSafe }}>
+          <AppLayoutContext.Provider value={{ appLayoutProps, setAppLayoutProps: setAppLayoutPropsSafe, onNavigate }}>
             <Routes>
-              
               <Route path="/" element={<Overview />} />
+              <Route path="/models" element={<Models />} />
+              <Route path="/models/:user/:repo" element={<ModelDetail />} />
+              <Route path="/models/:user" element={<ModelDetail />} />
               {/* <Route path="/new" element={<CreateEndpoint/>}/> */}
             </Routes>
           </AppLayoutContext.Provider>
         }
         {...appLayoutProps}
-      /> *
+      />
     </Auth>
   )
 }
