@@ -8,7 +8,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { staleTime: 60000 } },
+  defaultOptions: { queries: { staleTime: 60000, cacheTime: 5 * 60 * 1000 } },
 })
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

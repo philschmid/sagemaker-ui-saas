@@ -19,6 +19,7 @@ import Overview from './routes/Overview'
 import Models from './routes/Models'
 import ModelDetail from './routes/ModelDetail'
 import CreateEndpoint from './routes/CreateEndpoint'
+import Endpoints from './routes/Endpoints'
 
 /**
  * Define your nav items here.
@@ -26,12 +27,12 @@ import CreateEndpoint from './routes/CreateEndpoint'
 const NAVIGATION_ITEMS: SideNavigationProps.Item[] = [
   { text: 'Overview', type: 'link', href: '/' },
   { text: 'Hugging Face Models', type: 'link', href: '/models' },
-  { text: 'Create Endpoint', type: 'link', href: '/endpoints/new' },
   { type: 'divider' },
   {
     type: 'section',
     text: 'Inference',
     items: [
+      { text: 'Create Endpoint', type: 'link', href: '/endpoints/new' },
       {
         type: 'link',
         text: 'Endpoints',
@@ -132,8 +133,8 @@ const App: React.FC = () => {
               <Route path="/models" element={<Models />} />
               <Route path="/models/:user/:repo" element={<ModelDetail />} />
               <Route path="/models/:user" element={<ModelDetail />} />
-              {/* <Route path="/endpoints" element={<ModelDetail />} />
-              <Route path="/endpoints/:id" element={<ModelDetail />} /> */}
+              <Route path="/endpoints" element={<Endpoints />} />
+              {/* <Route path="/endpoints/:id" element={<ModelDetail />} /> */}
               <Route path="/endpoints/new" element={<CreateEndpoint />} />
               {/* <Route path="/new" element={<CreateEndpoint/>}/> */}
             </Routes>

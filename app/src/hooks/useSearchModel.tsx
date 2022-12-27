@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 
-// TODO: Refactor to react query
-export default function useContentOrigins() {
+export default function useModelSearch() {
   const requestParams = useRef({})
   const [models, setModels] = useState([])
   const [status, setStatus] = useState('finished')
@@ -31,5 +30,6 @@ export default function useContentOrigins() {
     }
   }, [requestParams])
   // @ts-ignore
+
   return [{ models, filteringText: requestParams.current.filteringText, status }, handlers]
 }

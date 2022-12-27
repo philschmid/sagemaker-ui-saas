@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo } from 'react'
 import { AppLayoutContext } from '../App'
 import { RuntimeConfigContext } from '../auth/Auth'
-import { fetchModels } from '../fetcher/huggingface'
+import { fetchModels, modelPreviewType } from '../fetcher/huggingface'
 import { useQuery } from '@tanstack/react-query'
 import {
   Table,
@@ -16,20 +16,27 @@ import {
 import React from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
-type model = {
-  id: string
-  pipeline_tag: string
-  downloads: number
-}
-
 /**
  * Component to render the home "/" route.
  */
 const Models: React.FC = () => {
   const navigate = useNavigate()
-  const { isError, isSuccess, isLoading, data, error } = useQuery(['products'], fetchModels, { staleTime: 3000 })
+  const { isError, isSuccess, isLoading, data, error } = useQuery(['products'], fetchModels)
   const [filteringText, setFilteringText] = React.useState('')
+  const [currentPageIndex, setCurrentPageIndex] = React.useState(0)
   const filteredModels = data?.filter((p) => p.id.includes(filteringText))
+
+  // group data into 25 items per page
+  const itemsPerPage = 25
+  const groupedData = useMemo(() => {
+    if (!filteredModels) return []
+    const groups = []
+    for (let i = 0; i < filteredModels?.length || 0; i += itemsPerPage) {
+      // @ts-ignore
+      groups.push(filteredModels.slice(i, i + itemsPerPage))
+    }
+    return groups
+  }, [filteredModels])
 
   if (isLoading) return <div>Loading...</div>
 
@@ -39,7 +46,7 @@ const Models: React.FC = () => {
         {
           id: 'model',
           header: 'Model Id',
-          cell: (e: model) => (
+          cell: (e: modelPreviewType) => (
             <Link
               onFollow={() => {
                 navigate(e.id)
@@ -53,14 +60,26 @@ const Models: React.FC = () => {
         },
         {
           id: 'pipeline',
-          header: 'task',
+          header: 'Task',
           cell: (e) => e.pipeline_tag,
+          sortingField: 'alt',
+        },
+        {
+          id: 'license',
+          header: 'License',
+          cell: (e) => e.license,
           sortingField: 'alt',
         },
         {
           id: 'downloads',
           header: 'Downloads',
-          cell: (e) => e.downloads,
+          cell: (e) => <code>{e.downloads.toLocaleString('en-US')}</code>,
+          sortingField: 'model',
+        },
+        {
+          id: 'library',
+          header: 'Library',
+          cell: (e) => e.library_name,
           sortingField: 'model',
         },
       ]}
@@ -73,13 +92,15 @@ const Models: React.FC = () => {
         />
       }
       variant="full-page"
-      items={filteredModels}
+      items={groupedData[currentPageIndex]}
       stickyHeader
       loadingText="Loading resources"
       header={
         <Header
           variant="h1"
-          counter={`(${filteredModels.length}/${data.length})`}
+          counter={`(${itemsPerPage * currentPageIndex}/${
+            data?.length !== filteredModels?.length ? filteredModels?.length : data?.length
+          })`}
           description={
             <span>
               List of avialble models on{' '}
@@ -92,13 +113,24 @@ const Models: React.FC = () => {
           Hugging Face Models
         </Header>
       }
+      pagination={
+        <Pagination
+          ariaLabels={{
+            nextPageLabel: 'Next page',
+            previousPageLabel: 'Previous page',
+            pageLabel: (pageNumber) => `Page ${pageNumber} of all pages`,
+          }}
+          currentPageIndex={currentPageIndex + 1}
+          onChange={({ detail }) => setCurrentPageIndex(detail.currentPageIndex - 1)}
+          pagesCount={groupedData.length}
+        />
+      }
       empty={
         <Box textAlign="center" color="inherit">
-          <b>No resources</b>
+          <b>No Models</b>
           <Box padding={{ bottom: 's' }} variant="p" color="inherit">
-            No resources to display.
+            No Models to display.
           </Box>
-          <Button>Create resource</Button>
         </Box>
       }
     />

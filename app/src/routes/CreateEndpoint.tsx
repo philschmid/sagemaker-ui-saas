@@ -30,7 +30,7 @@ import {
 } from '@cloudscape-design/components'
 import Form from '@cloudscape-design/components/form'
 
-import useContentOrigins from '../hooks/useSearchModel'
+import useModelSearch from '../hooks/useSearchModel'
 import React from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Divider } from '@aws-amplify/ui-react'
@@ -77,7 +77,7 @@ const CreateEndpoint: React.FC = () => {
 
 export default CreateEndpoint
 
-const taskOptions = {
+export const taskOptions = {
   'text-classification': 'Text Classification',
   'text-generation': 'Text Generation',
   'token-classification': 'Token Classification',
@@ -153,7 +153,7 @@ const CreateForm: React.FC = () => {
     instanceType: 'ml.c6i.2xlarge',
   })
 
-  const [contentOriginsState, contentOriginsHandlers] = useContentOrigins()
+  const [searchedResult, searchQuery] = useModelSearch()
   const [distributionPanelData, setDistributionPanelData] = React.useState(defaultState)
 
   const onChange = async (attribute, value) => {
@@ -202,18 +202,18 @@ const CreateForm: React.FC = () => {
               i18nStrings={{ errorIconAriaLabel: 'Error' }}
             >
               <Select
-                {...contentOriginsHandlers}
+                {...searchQuery}
                 // @ts-ignore
-                options={contentOriginsState.models}
+                options={searchedResult.models}
                 selectedAriaLabel="Selected"
                 // @ts-ignore
-                statusType={contentOriginsState.status}
+                statusType={searchedResult.status}
                 placeholder="organization/repository"
                 loadingText="Loading Models"
                 errorText="Error fetching models."
                 recoveryText="Retry"
                 // @ts-ignore
-                empty={contentOriginsState.filteringText ? "We can't find a match" : 'No models found'}
+                empty={searchedResult.filteringText ? "We can't find a match" : 'No models found'}
                 filteringType="manual"
                 filteringAriaLabel="Filter models"
                 ariaRequired={true}
@@ -261,7 +261,6 @@ const CreateForm: React.FC = () => {
                 i18nStrings={{ errorIconAriaLabel: 'Error' }}
               >
                 <Select
-                  {...contentOriginsHandlers}
                   options={taskOptionsArray}
                   placeholder="task"
                   ariaRequired={true}

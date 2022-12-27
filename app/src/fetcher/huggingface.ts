@@ -1,4 +1,5 @@
 import fm from 'front-matter';
+import { taskOptions } from '../routes/CreateEndpoint';
 
 interface modelDetail {
   id: string;
@@ -12,13 +13,32 @@ interface modelDetail {
   modelCardMarkdown: string;
 }
 
+export interface modelPreviewType {
+  id: string;
+  license: string;
+  pipeline_tag: string;
+  downloads: number;
+  library_name: string;
+}
+
 export const fetchModels = async () => {
-  const response = await fetch(`https://huggingface.co/api/models?sort=downloads&limit=100&direction=-1`);
+  const response = await fetch(`https://huggingface.co/api/models?sort=downloads&limit=1000&direction=-1&full=true`);
   if (!response.ok) {
     throw new Error(response.statusText);
   }
   const data = await response.json();
-  return data;
+  return data.map((model: any) => {
+    // extract license 
+    const license_string = model.tags.filter((tag: string) => tag.startsWith('license'))[0] || 'no:no license'
+    console.log()
+    return {
+      id: model.id,
+      license: (license_string.split(':')[1] || 'no license').toUpperCase(),
+      pipeline_tag: taskOptions[model.pipeline_tag] || 'No task',
+      downloads: model.downloads,
+      library_name: model.library_name || 'no library name',
+    }
+  }) as modelPreviewType[];
 }
 
 export const getModelDetail = async ({ queryKey }): Promise<modelDetail> => {
